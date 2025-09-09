@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <body>
+    <h3>Flight Intent Tester</h3>
+    <input id="prompt" size="80" value="Find me economy tickets from Hong Kong to London, budget max 10000 HKD" />
+    <button id="parseBtn">Parse</button>
+    <button id="searchBtn" disabled>Search</button>
+    <pre id="out"></pre>
+    <script>
+      let lastIntent = null;
+
+      document.getElementById('parseBtn').onclick = async () => {
+        const prompt = document.getElementById('prompt').value;
+        const res = await fetch('http://localhost:4000/api/parse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await res.json();
+        lastIntent = data;
+        document.getElementById('out').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('searchBtn').disabled = false;
+      };
+
+      document.getElementById('searchBtn').onclick = async () => {
+        if (!lastIntent) return;
+        const res = await fetch('http://localhost:4000/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ intent: lastIntent, mode: 'cheapest' })
+        });
+        const data = await res.json();
+        document.getElementById('out').textContent = JSON.stringify(data, null, 2);
+      };
+    </script>
+  </body>
+</html>
